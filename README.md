@@ -14,6 +14,8 @@ Fatal Python error: Py_Initialize: unable to load the file system codec
 ModuleNotFoundError: No module named 'encodings'
 ```
 
+https://stackoverflow.com/questions/34724057/embed-python3-without-standard-library
+
 ### CMake Options
 
 > (On) Windows it is not possible to build shared .dll extensions against a static libpython, so you must build any extensions you want into libpython itself.
