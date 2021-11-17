@@ -1,7 +1,7 @@
 # 4d-plugin-python
 4D implementation of libpython.
 
-* want more functionality than [micropython](https://micropython.org).
+* want more functionality than [micropython](https://micropython.org) or [tinypy].
 
 ### CMake Options
 
