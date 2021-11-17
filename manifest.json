@@ -1,0 +1,11 @@
+{
+    "name": "python",
+    "id": 20000,
+    "commands": [
+        {
+            "theme": "python",
+            "syntax": "python(&T;&J):J",
+            "threadSafe": true
+        }
+    ]
+}
