@@ -8,7 +8,7 @@
 
 > (On) Windows it is not possible to build shared .dll extensions against a static libpython, so you must build any extensions you want into libpython itself.
  
- [x] cccc
+ - [x] cccc
  
 ```
 BUILTIN_ARRAY=ON
