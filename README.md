@@ -88,6 +88,8 @@
  - [x] BUILTIN_XXSUBTYPE
  - [x] BUILTIN_ZLIB
 
+Other Windows-specific built-in extensions are left untouched. 
+
 ### 参考記事
 
 * https://github.com/python-cmake-buildsystem/python-cmake-buildsystem
