@@ -6,7 +6,7 @@
 
 ### Issues 
 
-`stdout` and `stderr` are not  redirected for capture.
+`stdout` and `stderr` are not captured. they are sent to `stdout` and `stderr` of the host application.
 
 * https://docs.microsoft.com/ja-jp/cpp/c-runtime-library/reference/dup-dup2?view=msvc-170
 
