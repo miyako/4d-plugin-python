@@ -8,6 +8,8 @@
 
 `stdout` and `stderr` are not  redirected for capture.
 
+* https://docs.microsoft.com/ja-jp/cpp/c-runtime-library/reference/dup-dup2?view=msvc-170
+
 ### CMake Options
 
 > (On) Windows it is not possible to build shared .dll extensions against a static libpython, so you must build any extensions you want into libpython itself.
