@@ -4,6 +4,10 @@
 * want more functionality than [micropython](https://micropython.org), etc.
 * want static library for package distribution.
 
+### Issues 
+
+`stdout` and `stderr` are not  redirected for capture.
+
 ### CMake Options
 
 > (On) Windows it is not possible to build shared .dll extensions against a static libpython, so you must build any extensions you want into libpython itself.
