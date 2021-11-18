@@ -13,7 +13,7 @@
 
 `stdout` and `stderr` are not captured. they are sent to `stdout` and `stderr` of the host application.
 
-The standard technique using `dup` and `dup2` does not work for redirecting `libpython`.
+The standard technique using `dup` and `dup2` does not seeem to work for redirecting `libpython`.
 
 * https://docs.microsoft.com/ja-jp/cpp/c-runtime-library/reference/dup-dup2?view=msvc-170
 
