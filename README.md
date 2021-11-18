@@ -4,17 +4,13 @@
 * want more functionality than [micropython](https://micropython.org), etc.
 * want static library for package distribution.
 
-### Error 
+### Issues 
 
-```
-Could not find platform independent libraries <prefix>
-Could not find platform dependent libraries <exec_prefix>
-Consider setting $PYTHONHOME to <prefix>[:<exec_prefix>]
-Fatal Python error: Py_Initialize: unable to load the file system codec
-ModuleNotFoundError: No module named 'encodings'
-```
+`stdout` and `stderr` are not captured. they are sent to `stdout` and `stderr` of the host application.
 
-https://stackoverflow.com/questions/34724057/embed-python3-without-standard-library
+The standard technique using `dup` and `dup2` does not work for redirecting `libpython`.
+
+* https://docs.microsoft.com/ja-jp/cpp/c-runtime-library/reference/dup-dup2?view=msvc-170
 
 ### CMake Options
 
@@ -100,7 +96,10 @@ https://stackoverflow.com/questions/34724057/embed-python3-without-standard-libr
  - [x] BUILTIN_XXSUBTYPE
  - [x] BUILTIN_ZLIB
 
+Windows or UNIX specific built-in extensions are left untouched. 
+
 ### 参考記事
 
 * https://github.com/python-cmake-buildsystem/python-cmake-buildsystem
 * [python-cmake-buildsystem で libpython を自前 C/C++ アプリに組み込む](https://qiita.com/syoyo/items/5a935fdcbdf89e0a2635)
+* [Fatal Python error: Py_Initialize: unable to load the file system](https://stackoverflow.com/questions/34724057/embed-python3-without-standard-library)
