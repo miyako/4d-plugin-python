@@ -15,7 +15,11 @@
 
 #include "Python.h"
 
+#if VERSIONMAC
 #import <Cocoa/Cocoa.h>
+#else
+#define BZ_EXTERN
+#endif
 
 #define THIS_BUNDLE_ID @"com.4D.python"
 #define THIS_BUNDLE_NAME L"python.4DX"

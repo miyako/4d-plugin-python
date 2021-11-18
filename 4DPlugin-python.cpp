@@ -17,7 +17,7 @@ static bool getPythonHome(std::wstring& path) {
 
     NSBundle *thisBundle = [NSBundle bundleWithIdentifier:THIS_BUNDLE_ID];
     if(thisBundle){
-        NSString *str = [[thisBundle resourcePath]stringByAppendingPathComponent:@"python"];
+        NSString *str = [[[thisBundle resourcePath]stringByAppendingPathComponent:@"python"]stringByAppendingPathComponent:@"lib"];
         if(str){
             NSData *u32 = [str dataUsingEncoding:NSUTF32LittleEndianStringEncoding];//default is BE
             path = std::wstring((wchar_t *)[u32 bytes], wcslen((wchar_t *)[u32 bytes]));
@@ -39,13 +39,14 @@ static bool getPythonHome(std::wstring& path) {
     wchar_t thisPath[_MAX_PATH] = {0};
     wchar_t resourcesPath[_MAX_PATH] = {0};
     wchar_t python_path[_MAX_PATH] = {0};
+	wchar_t lib_path[_MAX_PATH] = { 0 };
     
     HMODULE hplugin = GetModuleHandleW(THIS_BUNDLE_NAME);
     GetModuleFileNameW(hplugin, thisPath, _MAX_PATH);
     
     _wsplitpath_s(thisPath, fDrive, fDir, fName, fExt);
     
-    wstring windowsPath = fDrive;
+    std::wstring windowsPath = fDrive;
     windowsPath += fDir;
     if(windowsPath.at(windowsPath.size() - 1) == L'\\')
         windowsPath = windowsPath.substr(0, windowsPath.size() - 1);
@@ -54,9 +55,12 @@ static bool getPythonHome(std::wstring& path) {
     _wmakepath_s(resourcesPath, fDrive, fDir, L"Resources\\", NULL);
     
     _wsplitpath_s(resourcesPath, fDrive, fDir, fName, fExt);
-    _wmakepath_s(python_path, fDrive, fDir, L"python", NULL);
-    
-    path = std::wstring(python_path);
+    _wmakepath_s(python_path, fDrive, fDir, L"python\\", NULL);
+
+	_wsplitpath_s(python_path, fDrive, fDir, fName, fExt);
+	_wmakepath_s(lib_path, fDrive, fDir, L"lib", NULL);
+
+    path = std::wstring(lib_path);
     
     return true;
 }
@@ -68,6 +72,7 @@ static void OnSartup() {
     
     if(getPythonHome(path)) {
  
+		Py_SetPath((wchar_t *)path.c_str());
         Py_SetPythonHome((wchar_t *)path.c_str());
 
         //https://docs.python.org/3.6/c-api/init.html
@@ -76,7 +81,7 @@ static void OnSartup() {
         Py_IgnoreEnvironmentFlag = 1;
         Py_NoUserSiteDirectory = 1;
         
-//        Py_UnbufferedStdioFlag = 1;
+        //Py_UnbufferedStdioFlag = 1;
         
         Py_InitializeEx(0);
         
@@ -140,8 +145,24 @@ void python(PA_PluginParameters params) {
     }
     
     int res = 0;
-        
+	/*
+	fpos_t pos;
+	const char *newStream = "data";
+	fflush(stdout);
+	fgetpos(stdout, &pos);
+	int fd = dup(1);
+	freopen(newStream, "w", stdout);
+	*/
+
     res = PyRun_SimpleString(python.c_str());
+
+	/*
+	fflush(stdout);
+	dup2(fd, 1);
+	close(fd);
+	clearerr(stdout);
+	fsetpos(stdout, &pos);
+	*/
 
     ob_set_b(status, L"success", res == 0);
     
