@@ -42,6 +42,7 @@ The standard technique using `dup` and `dup2` does not seeem to work for redirec
 ### TODO
 
 * imput stream [PyOS_InputHook](https://docs.python.org/3.6/c-api/veryhigh.html#c.PyOS_InputHook)
+* readline [PyOS_ReadlineFunctionPointer](https://docs.python.org/3.6/c-api/veryhigh.html#c.PyOS_ReadlineFunctionPointer)
 * ~~4D method callback [PyCFunction](https://docs.python.org/3.6/c-api/structures.html#c.PyCFunction)~~
 
 ### CMake Options
