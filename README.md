@@ -1,16 +1,48 @@
+![version](https://img.shields.io/badge/version-18%2B-EB8E5F)
+![platform](https://img.shields.io/static/v1?label=platform&message=mac-intel%20|%20mac-arm%20|%20win-64&color=blue)
+[![license](https://img.shields.io/github/license/miyako/4d-plugin-python)](LICENSE)
+![downloads](https://img.shields.io/github/downloads/miyako/4d-plugin-python/total)
+
 # 4d-plugin-python
 4D implementation of libpython.
 
 * want more functionality than [micropython](https://micropython.org), etc.
 * want static library for package distribution.
 
+### Callback (1.1.0, experimental, macOS only for now)
+
+```4d
+/*
+	import fourd
+	d = {"foo":"bar"};
+	fourd.call("cb_test", d);
+*/
+
+  //invoke the project method "cb_test" passing d as $1 (C_OBJECT)
+
+METHOD GET CODE(Current method path;$code)
+
+ARRAY LONGINT($pos;0)
+ARRAY LONGINT($len;0)
+
+If (Match regex("(?s)(?:\\/\\*)(.*)(?:\\*\\/)";$code;1;$pos;$len))
+	$py:=Substring($code;$pos{1};$len{1})
+	$status:=python ($py)
+End if 
+```
+
 ### Issues 
 
 `stdout` and `stderr` are not captured. they are sent to `stdout` and `stderr` of the host application.
 
-The standard technique using `dup` and `dup2` does not work for redirecting `libpython`.
+The standard technique using `dup` and `dup2` does not seeem to work for redirecting `libpython`.
 
 * https://docs.microsoft.com/ja-jp/cpp/c-runtime-library/reference/dup-dup2?view=msvc-170
+
+### TODO
+
+* imput stream [PyOS_InputHook](https://docs.python.org/3.6/c-api/veryhigh.html#c.PyOS_InputHook)
+* 4D method callback [PyCFunction](https://docs.python.org/3.6/c-api/structures.html#c.PyCFunction)
 
 ### CMake Options
 
