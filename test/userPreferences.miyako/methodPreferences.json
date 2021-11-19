@@ -196,5 +196,23 @@
 		"folding": [],
 		"bookmarks": [],
 		"stamp": "2019-12-13T04:37:40.619Z"
+	},
+	"Sources/Methods/TEST1.4dm": {
+		"startSelection": 7,
+		"endSelection": 0,
+		"firstSelectedLine": 16,
+		"lastSelectedLine": 0,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2021-11-19T16:41:51.817Z"
+	},
+	"Sources/Methods/cb_test.4dm": {
+		"startSelection": 27,
+		"endSelection": 27,
+		"firstSelectedLine": 4,
+		"lastSelectedLine": 4,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2021-11-19T16:32:01.084Z"
 	}
 }

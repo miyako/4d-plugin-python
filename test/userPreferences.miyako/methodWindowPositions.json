@@ -160,5 +160,17 @@
 		"top": 458,
 		"width": 1129,
 		"height": 757
+	},
+	"Sources/Methods/TEST1.4dm": {
+		"left": 572,
+		"top": 297,
+		"width": 921,
+		"height": 540
+	},
+	"Sources/Methods/cb_test.4dm": {
+		"left": 952,
+		"top": 629,
+		"width": 877,
+		"height": 637
 	}
 }

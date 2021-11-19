@@ -66,7 +66,247 @@ static bool getPythonHome(std::wstring& path) {
 }
 #endif
 
-static void OnSartup() {
+static PyObject *fourd_type_to_python_type(PA_Variable status) {
+    
+    PyObject *result = NULL;
+    
+    PA_VariableKind vk = PA_GetVariableKind(status);
+    
+    switch (vk) {
+        case eVK_Blob:
+        {
+            PA_Handle h = PA_GetBlobHandleVariable(status);
+            if(h) {
+                result = PyBytes_FromStringAndSize((const char *)PA_LockHandle(h), (Py_ssize_t)PA_GetHandleSize(h));
+                PA_UnlockHandle(h);
+            }
+        }
+            break;
+        case eVK_Date:
+            //TODO: C_DATE
+            break;
+        case eVK_Real:
+            result =  PyFloat_FromDouble(PA_GetRealVariable(status));
+            break;
+        case eVK_Object:
+            //TODO: C_OBJECT
+            break;
+        case eVK_Boolean:
+            if(PA_GetBooleanVariable(status)) {
+                Py_RETURN_TRUE;
+            }else{
+                Py_RETURN_FALSE;
+            }
+            break;
+        case eVK_Longint:
+        case eVK_Integer:
+        case eVK_Time:
+            result = PyLong_FromLong(PA_GetLongintVariable(status));
+            break;
+        case eVK_Collection:
+            //TODO: C_COLLECTION
+            break;
+        case eVK_Picture:
+            //TODO: C_PICTURE
+            break;
+        case eVK_Unistring:
+        case eVK_Text:
+        {
+            PA_Unistring str = PA_GetStringVariable(status);
+            CUTF16String u16 = PA_GetUnistring(&str);
+            std::string u8;
+            u16_to_u8(u16, u8);
+            result = PyUnicode_FromStringAndSize(u8.c_str(), (Py_ssize_t)u8.length());
+        }
+            break;
+        case eVK_Null:
+            Py_RETURN_NONE;
+            break;
+        case eVK_Undefined:
+        default:
+            break;
+    }
+
+    return result;
+}
+
+static void python_type_to_fourd_type(PyObject *arg, PA_ObjectRef obj);
+
+static void python_list_to_fourd_collection(PyObject *arg, PA_CollectionRef col) {
+ 
+    for(Py_ssize_t i = 0; i < PyList_Size(arg); ++i) {
+        PyObject *elem = PyList_GetItem(arg, i);
+        if(PyUnicode_Check(elem)) {
+            std::string u8 = PyUnicode_AsUTF8AndSize(elem, NULL);
+            CUTF16String u16;
+            u8_to_u16(u8, u16);
+            PA_Variable v = PA_CreateVariable(eVK_Unistring);
+            PA_Unistring value = PA_CreateUnistring((PA_Unichar *)u16.c_str());
+            PA_SetStringVariable(&v, &value);
+            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            continue;
+        }
+        if(PyLong_Check(elem)) {
+            PA_Variable v = PA_CreateVariable(eVK_Longint);
+            PA_SetLongintVariable(&v, (PA_long32)PyLong_AsLong(elem));
+            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            continue;
+        }
+        if(PyFloat_Check(elem)) {
+            PA_Variable v = PA_CreateVariable(eVK_Real);
+            PA_SetRealVariable(&v, PyFloat_AsDouble(elem));
+            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            continue;
+        }
+        if(elem == NULL) {
+            PA_Variable v = PA_CreateVariable(eVK_Null);
+            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            continue;
+        }
+        if(PyBool_Check(elem)) {
+            PA_Variable v = PA_CreateVariable(eVK_Boolean);
+            PA_SetBooleanVariable(&v, (char)PyLong_AsLong(elem));
+            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            continue;
+        }
+        if(PyDict_Check(elem)) {
+            PA_ObjectRef prop = PA_CreateObject();
+            python_type_to_fourd_type(elem, prop);
+            PA_Variable v = PA_CreateVariable(eVK_Object);
+            PA_SetObjectVariable(&v, prop);
+            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            continue;
+        }
+        if(PyList_Check(elem)) {
+            PA_CollectionRef col2 = PA_CreateCollection();
+            python_list_to_fourd_collection(elem, col2);
+            PA_Variable v = PA_CreateVariable(eVK_Collection);
+            PA_SetCollectionVariable(&v, col2);
+            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+        }
+    }
+}
+    
+static void python_type_to_fourd_type(PyObject *arg, PA_ObjectRef obj) {
+    
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    
+    while (PyDict_Next(arg, &pos, &key, &value)) {
+        const char *u8 = PyUnicode_AsUTF8AndSize(key, NULL);
+        if(u8) {
+            if(PyUnicode_Check(value)) {
+                ob_set_s(obj, u8, PyUnicode_AsUTF8AndSize(value, NULL));
+                continue;
+            }
+            if(PyLong_Check(value)) {
+                ob_set_n(obj, u8, PyLong_AsLong(value));
+                continue;
+            }
+            if(PyFloat_Check(value)) {
+                ob_set_n(obj, u8, PyFloat_AsDouble(value));
+                continue;
+            }
+            if(value == NULL) {
+                ob_set_0(obj, u8);
+                continue;
+            }
+            if(PyBool_Check(value)) {
+                ob_set_b(obj, u8, PyLong_AsLong(value));
+                continue;
+            }
+            if(PyDict_Check(value)) {
+                PA_ObjectRef prop = PA_CreateObject();
+                python_type_to_fourd_type(value, prop);
+                ob_set_o(obj, u8, prop);
+                continue;
+            }
+            if(PyList_Check(value)) {
+                PA_CollectionRef col = PA_CreateCollection();
+                python_list_to_fourd_collection(value, col);
+                ob_set_c(obj, u8, col);
+            }
+        }
+    }
+}
+
+static PyObject *fourd_call(PyObject *self, PyObject *args) {
+    
+    PyObject *result = NULL;
+    
+    char *arg1;
+    PyObject *arg2 = NULL;
+    
+    if (PyArg_ParseTuple(args, "s|O", &arg1, &arg2)) {
+        
+        PA_long32 method_id = 0;
+        std::string u8 = arg1;
+        CUTF16String u16;
+        u8_to_u16(u8, u16);
+        method_id = PA_GetMethodID((PA_Unichar *)u16.c_str());
+        int argc = 0;
+        if(method_id) {
+            
+            PA_Variable params[1];
+            params[0] = PA_CreateVariable(eVK_Object);
+            PA_ObjectRef param1 = PA_CreateObject();
+            
+            if(arg2) {
+
+                if(PyDict_Check(arg2)) {
+                    
+                    python_type_to_fourd_type(arg2, param1);
+
+                    argc++;
+                }
+            }
+
+            PA_SetObjectVariable(&params[0], param1);
+            
+            PA_Variable status = PA_ExecuteMethodByID(method_id, params, argc);
+            
+            result = fourd_type_to_python_type(status);
+                                    
+            PA_ClearVariable(&params[0]);
+        }
+  
+    }
+                         
+    return result;
+}
+
+static PyMethodDef EmbMethods[] = {
+    {
+        "call",
+        fourd_call,
+        METH_VARARGS,
+        "call 4D project method"
+    },
+    /* end of list */
+    {
+        NULL,
+        NULL,
+        0,
+        NULL
+    }
+};
+
+static PyModuleDef EmbModule = {
+    
+    PyModuleDef_HEAD_INIT,
+    "fourd",
+    NULL,
+    -1,
+    EmbMethods,
+    NULL, NULL, NULL, NULL
+};
+
+static PyObject *PyInit_fourd(void) {
+    
+    return PyModule_Create(&EmbModule);
+}
+
+static void OnStartup() {
 
     std::wstring path;
     
@@ -74,19 +314,15 @@ static void OnSartup() {
  
 		Py_SetPath((wchar_t *)path.c_str());
         Py_SetPythonHome((wchar_t *)path.c_str());
-
-        //https://docs.python.org/3.6/c-api/init.html
         
         Py_NoSiteFlag = 1;
         Py_IgnoreEnvironmentFlag = 1;
         Py_NoUserSiteDirectory = 1;
-        
-        //Py_UnbufferedStdioFlag = 1;
+                
+        PyImport_AppendInittab("fourd", &PyInit_fourd);
         
         Py_InitializeEx(0);
         
-        printf("Python %s on %s\n", Py_GetVersion(), Py_GetPlatform());
- 
     }
         
 }
@@ -103,14 +339,12 @@ void PluginMain(PA_long32 selector, PA_PluginParameters params) {
         {
             case kInitPlugin:
             case kServerInitPlugin:
-                OnSartup();
-                //PA_RunInMainProcess((PA_RunInMainProcessProcPtr)OnSartup, NULL);
+                OnStartup();
                 break;
                 
             case kDeinitPlugin:
             case kServerDeinitPlugin:
                 OnExit();
-                //PA_RunInMainProcess((PA_RunInMainProcessProcPtr)OnExit  , NULL);
                 break;
                 
 			// --- python
@@ -135,7 +369,9 @@ void python(PA_PluginParameters params) {
     PA_ObjectRef status = PA_CreateObject();
     
     ob_set_b(status, L"success", false);
-
+    ob_set_s(status, L"version", Py_GetVersion());
+    ob_set_s(status, L"build", Py_GetBuildInfo());
+    
     std::string python;
     
     PA_Unistring *arg1 = PA_GetStringParameter(params, 1);
@@ -145,25 +381,9 @@ void python(PA_PluginParameters params) {
     }
     
     int res = 0;
-	/*
-	fpos_t pos;
-	const char *newStream = "data";
-	fflush(stdout);
-	fgetpos(stdout, &pos);
-	int fd = dup(1);
-	freopen(newStream, "w", stdout);
-	*/
 
     res = PyRun_SimpleString(python.c_str());
-
-	/*
-	fflush(stdout);
-	dup2(fd, 1);
-	close(fd);
-	clearerr(stdout);
-	fsetpos(stdout, &pos);
-	*/
-
+    
     ob_set_b(status, L"success", res == 0);
     
     PA_ReturnObject(params, status);

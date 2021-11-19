@@ -44,6 +44,7 @@ void ob_set_0(PA_ObjectRef obj, const wchar_t *_key);
 void ob_set_0(PA_ObjectRef obj, const char *_key);
 
 void ob_set_b(PA_ObjectRef obj, const wchar_t *_key, bool value);
+void ob_set_b(PA_ObjectRef obj, const char *_key, bool value);
 
 bool ob_is_defined(PA_ObjectRef obj, const wchar_t *_key);
 

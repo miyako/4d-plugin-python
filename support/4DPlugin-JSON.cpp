@@ -452,6 +452,43 @@ void ob_set_b(PA_ObjectRef obj, const wchar_t *_key, bool value) {
     }
 }
 
+void ob_set_b(PA_ObjectRef obj, const char *_key, bool value) {
+    
+    if(obj)
+    {
+        CUTF8String u8k = CUTF8String((const uint8_t *)_key);
+        CUTF16String u16k, u16v;
+        
+#ifdef _WIN32
+        int len = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)u8k.c_str(), u8k.length(), NULL, 0);
+        if(len){
+            std::vector<uint8_t> buf((len + 1) * sizeof(PA_Unichar));
+            if(MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)u8k.c_str(), u8k.length(), (LPWSTR)&buf[0], len)){
+                u16k = CUTF16String((const PA_Unichar *)&buf[0]);
+            }
+        }
+#else
+        CFStringRef str = CFStringCreateWithBytes(kCFAllocatorDefault, u8k.c_str(), u8k.length(), kCFStringEncodingUTF8, true);
+        if(str){
+            CFIndex len = CFStringGetLength(str);
+            std::vector<uint8_t> buf((len+1) * sizeof(PA_Unichar));
+            CFStringGetCharacters(str, CFRangeMake(0, len), (UniChar *)&buf[0]);
+            u16k = CUTF16String((const PA_Unichar *)&buf[0]);
+            CFRelease(str);
+        }
+#endif
+
+        PA_Variable v = PA_CreateVariable(eVK_Boolean);
+        PA_Unistring key = PA_CreateUnistring((PA_Unichar *)u16k.c_str());
+
+        PA_SetBooleanVariable(&v, value);
+        PA_SetObjectProperty(obj, &key, v);
+        
+        PA_DisposeUnistring(&key);
+        PA_ClearVariable(&v);
+    }
+}
+
 bool ob_is_defined(PA_ObjectRef obj, const wchar_t *_key) {
     
     bool is_defined = false;

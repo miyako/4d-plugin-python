@@ -8,7 +8,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			nxi4q27xOG2QmcRp6OF463Pz+I0=
+			Td6m8krlhUkqm0YbigHVLFz8nIc=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -32,6 +32,10 @@
 		<key>Resources/python/lib/__phello__.foo.py</key>
 		<data>
 		LeTXYy4k66qgCSOklKhx9PdwTAU=
+		</data>
+		<key>Resources/python/lib/__pycache__/_bootlocale.cpython-36.pyc</key>
+		<data>
+		m/fLF20wVWxG0RTK/hvgsBVwZAw=
 		</data>
 		<key>Resources/python/lib/__pycache__/_weakrefset.cpython-36.pyc</key>
 		<data>
@@ -8055,11 +8059,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			nxi4q27xOG2QmcRp6OF463Pz+I0=
+			Td6m8krlhUkqm0YbigHVLFz8nIc=
 			</data>
 			<key>hash2</key>
 			<data>
-			0G9prGHzbZJoH3iwDahp2QKasWGj6B8xQ/2dbLaKZA4=
+			6d5ogDcvqWzl60Rg3yEcdnvLSuIPsUJCtN+idqe1gX4=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -8106,6 +8110,17 @@
 			<key>hash2</key>
 			<data>
 			WG2b+bQvrdMv6x+6gGE7y/tBgNvNbwOvZ4tabeudans=
+			</data>
+		</dict>
+		<key>Resources/python/lib/__pycache__/_bootlocale.cpython-36.pyc</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			m/fLF20wVWxG0RTK/hvgsBVwZAw=
+			</data>
+			<key>hash2</key>
+			<data>
+			JrDzrChcIx0Lf3lm5/txirU+Jc88AqWLX0Cq9+P9GGA=
 			</data>
 		</dict>
 		<key>Resources/python/lib/__pycache__/_weakrefset.cpython-36.pyc</key>
