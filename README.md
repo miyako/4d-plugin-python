@@ -9,7 +9,7 @@
 * want more functionality than [micropython](https://micropython.org), etc.
 * want static library for package distribution.
 
-### Callback (1.1.0, experimental, macOS only for now)
+### Project Method Callback
 
 ```4d
 /*
