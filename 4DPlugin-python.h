@@ -24,6 +24,8 @@
 #define THIS_BUNDLE_ID @"com.4D.python"
 #define THIS_BUNDLE_NAME L"python.4DX"
 
+#include "json/json.h"
+
 #pragma mark -
 
 void python(PA_PluginParameters params);

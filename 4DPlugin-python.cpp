@@ -66,6 +66,66 @@ static bool getPythonHome(std::wstring& path) {
 }
 #endif
 
+static Json::Value fourd_collection_to_json(PA_CollectionRef obj, Json::Value *jsonValue) {
+    
+    bool parse = false;
+        
+    if(obj) {
+        PA_Variable params[1], result;
+        params[0] = PA_CreateVariable(eVK_Collection);
+        PA_SetObjectVariable(&params[0], obj);
+        result = PA_ExecuteCommandByID(1217, params, 1);
+        PA_Unistring json = PA_GetStringVariable(result);
+        CUTF16String u16;
+        u16 = PA_GetUnistring(&json);
+        std::string u8;
+        u16_to_u8(u16, u8);
+        
+        Json::CharReaderBuilder builder;
+        Json::CharReader *reader = builder.newCharReader();
+        
+        std::string errors;
+        parse = reader->parse((const char *)u8.c_str(),
+                              (const char *)u8.c_str() + u8.size(),
+                              jsonValue,
+                              &errors);
+        delete reader;
+    }
+        
+    return parse;
+}
+
+static Json::Value fourd_object_to_json(PA_ObjectRef obj, Json::Value *jsonValue) {
+    
+    bool parse = false;
+        
+    if(obj) {
+        PA_Variable params[1], result;
+        params[0] = PA_CreateVariable(eVK_Object);
+        PA_SetObjectVariable(&params[0], obj);
+        result = PA_ExecuteCommandByID(1217, params, 1);
+        PA_Unistring json = PA_GetStringVariable(result);
+        CUTF16String u16;
+        u16 = PA_GetUnistring(&json);
+        std::string u8;
+        u16_to_u8(u16, u8);
+        
+        Json::CharReaderBuilder builder;
+        Json::CharReader *reader = builder.newCharReader();
+        
+        std::string errors;
+        parse = reader->parse((const char *)u8.c_str(),
+                              (const char *)u8.c_str() + u8.size(),
+                              jsonValue,
+                              &errors);
+        delete reader;
+    }
+        
+    return parse;
+}
+
+static void json_to_python_object(Json::Value jsonValue, PyObject *obj);
+
 static PyObject *fourd_type_to_python_type(PA_Variable status) {
     
     PyObject *result = NULL;
@@ -89,7 +149,16 @@ static PyObject *fourd_type_to_python_type(PA_Variable status) {
             result =  PyFloat_FromDouble(PA_GetRealVariable(status));
             break;
         case eVK_Object:
-            //TODO: C_OBJECT
+        {
+            PA_ObjectRef o = PA_GetObjectVariable(status);
+            Json::Value jsonValue;
+            if(fourd_object_to_json(o, &jsonValue)) {
+                if(jsonValue.isObject())
+                {
+                    json_to_python_object(jsonValue, result);
+                }
+            }
+        }
             break;
         case eVK_Boolean:
             if(PA_GetBooleanVariable(status)) {
@@ -104,7 +173,16 @@ static PyObject *fourd_type_to_python_type(PA_Variable status) {
             result = PyLong_FromLong(PA_GetLongintVariable(status));
             break;
         case eVK_Collection:
-            //TODO: C_COLLECTION
+        {
+            PA_CollectionRef c = PA_GetCollectionVariable(status);
+            Json::Value jsonValue;
+            if(fourd_collection_to_json(c, &jsonValue)) {
+                if(jsonValue.isArray())
+                {
+                    json_to_python_object(jsonValue, result);
+                }
+            }
+        }
             break;
         case eVK_Picture:
             //TODO: C_PICTURE
@@ -364,6 +442,105 @@ void PluginMain(PA_long32 selector, PA_PluginParameters params) {
 
 #pragma mark -
 
+static void json_to_python_object(Json::Value jsonValue, PyObject *obj) {
+    
+    if(jsonValue.isObject())
+    {
+        for(Json::Value::const_iterator it = jsonValue.begin() ; it != jsonValue.end() ; it++)
+        {
+            JSONCPP_STRING k = it.name();
+
+            if(it->isInt()) {
+                PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
+                PyObject *value = PyLong_FromLong(it->asInt());
+                PyDict_SetItem(obj, key, value);
+                continue;
+            }
+            if(it->isDouble()) {
+                PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
+                PyObject *value = PyFloat_FromDouble(it->asDouble());
+                PyDict_SetItem(obj, key, value);
+                continue;
+            }
+            if(it->isString()) {
+                JSONCPP_STRING v = it->asString();
+                PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
+                PyObject *value = PyUnicode_FromStringAndSize(v.c_str(), (Py_ssize_t)v.length());
+                PyDict_SetItem(obj, key, value);
+                continue;
+            }
+            if(it->isBool()) {
+                PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
+                PyObject *value = it->asBool() ? Py_True : Py_False;
+                PyDict_SetItem(obj, key, value);
+                continue;
+            }
+            if(it->isNull()) {
+                PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
+                PyObject *value = Py_None;
+                PyDict_SetItem(obj, key, value);
+                continue;
+            }
+            if(it->isObject()) {
+                PyObject *locals = PyDict_New();
+                json_to_python_object(*it, locals);
+                continue;
+            }
+            if(it->isArray()) {
+                PyObject *locals = PyList_New(0);
+                json_to_python_object(*it, locals);
+                continue;
+            }
+        }
+    }
+    
+    if(jsonValue.isArray())
+    {
+        for(Json::Value::const_iterator i = jsonValue.begin() ; i != jsonValue.end() ; i++)
+        {
+            Json::Value value = *i;
+            if(i->isInt()) {
+                PyObject *value = PyLong_FromLong(i->asInt());
+                PyList_Append(obj, value);
+                continue;
+            }
+            if(i->isDouble()) {
+                PyObject *value = PyFloat_FromDouble(i->asDouble());
+                PyList_Append(obj, value);
+                continue;
+            }
+            if(i->isString()) {
+                JSONCPP_STRING v = i->asString();
+                PyObject *value = PyUnicode_FromStringAndSize(v.c_str(), (Py_ssize_t)v.length());
+                PyList_Append(obj, value);
+                continue;
+            }
+            if(i->isBool()) {
+                PyObject *value = i->asBool() ? Py_True : Py_False;
+                PyList_Append(obj, value);
+                continue;
+            }
+            if(i->isNull()) {
+                PyObject *value = Py_None;
+                PyList_Append(obj, value);
+                continue;
+            }
+            if(i->isObject()) {
+                PyObject *value = PyDict_New();
+                json_to_python_object(*i, value);
+                PyList_Append(obj, value);
+                continue;
+            }
+            if(i->isArray()) {
+                PyObject *value = PyList_New(0);
+                json_to_python_object(*i, value);
+                PyList_Append(obj, value);
+                continue;
+            }
+        }
+    }
+}
+
 void python(PA_PluginParameters params) {
     
     PA_ObjectRef status = PA_CreateObject();
@@ -380,11 +557,35 @@ void python(PA_PluginParameters params) {
         u16_to_u8(u16, python);
     }
     
-    int res = 0;
-
-    res = PyRun_SimpleString(python.c_str());
+    PyObject *main = PyImport_AddModule("__main__");
+    PyObject *globals = PyModule_GetDict(main);
     
-    ob_set_b(status, L"success", res == 0);
+    PyObject *locals = PyDict_New();
+    
+    PA_ObjectRef variables = PA_GetObjectParameter(params, 2);
+    if(variables) {
+        Json::Value jsonValue;
+        if(fourd_object_to_json(variables, &jsonValue)) {
+            if(jsonValue.isObject())
+            {
+                json_to_python_object(jsonValue, locals);
+            }
+        }
+    }
+        
+    PyObject *ref = PyRun_String(python.c_str(),
+                                 Py_file_input,
+                                 globals,
+                                 locals);
+    
+    Py_DECREF(locals);
+    
+    if (ref != NULL) {
+        PA_ObjectRef returnValue = PA_CreateObject();
+        python_type_to_fourd_type(ref, returnValue);
+        ob_set_b(status, L"returnCalue", returnValue);
+        ob_set_b(status, L"success", true);
+    }
     
     PA_ReturnObject(params, status);
 }
