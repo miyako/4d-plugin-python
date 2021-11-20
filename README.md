@@ -9,6 +9,28 @@
 * want more functionality than [micropython](https://micropython.org), etc.
 * want static library for package distribution.
 
+### Project method callback
+
+```4d
+/*
+	import fourd
+	d = {"foo":"bar"};
+	fourd.call("cb_test", d);
+*/
+
+  //invoke the project method "cb_test" passing d as $1 (C_OBJECT)
+
+METHOD GET CODE(Current method path;$code)
+
+ARRAY LONGINT($pos;0)
+ARRAY LONGINT($len;0)
+
+If (Match regex("(?s)(?:\\/\\*)(.*)(?:\\*\\/)";$code;1;$pos;$len))
+	$py:=Substring($code;$pos{1};$len{1})
+	$status:=python ($py)
+End if 
+```
+
 ### Passing locals
 
 ```4d
@@ -29,28 +51,6 @@ ARRAY LONGINT($len;0)
 If (Match regex("(?s)(?:\\/\\*)(.*)(?:\\*\\/)";$code;1;$pos;$len))
 	$py:=Substring($code;$pos{1};$len{1})
 	$status:=python ($py;$locals)
-End if 
-```
-
-### Project method callback
-
-```4d
-/*
-	import fourd
-	d = {"foo":"bar"};
-	fourd.call("cb_test", d);
-*/
-
-  //invoke the project method "cb_test" passing d as $1 (C_OBJECT)
-
-METHOD GET CODE(Current method path;$code)
-
-ARRAY LONGINT($pos;0)
-ARRAY LONGINT($len;0)
-
-If (Match regex("(?s)(?:\\/\\*)(.*)(?:\\*\\/)";$code;1;$pos;$len))
-	$py:=Substring($code;$pos{1};$len{1})
-	$status:=python ($py)
 End if 
 ```
 
