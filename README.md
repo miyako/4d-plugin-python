@@ -32,7 +32,7 @@ If (Match regex("(?s)(?:\\/\\*)(.*)(?:\\*\\/)";$code;1;$pos;$len))
 End if 
 ```
 
-### Project Method Callback
+### Project method callback
 
 ```4d
 /*
