@@ -143,12 +143,6 @@
 		"width": 1129,
 		"height": 762
 	},
-	"Sources/Methods/TEST.4dm": {
-		"left": 394,
-		"top": 469,
-		"width": 877,
-		"height": 637
-	},
 	"Sources/Methods/TEST_v17.4dm": {
 		"left": 450,
 		"top": 163,
@@ -161,16 +155,28 @@
 		"width": 1129,
 		"height": 757
 	},
-	"Sources/Methods/TEST1.4dm": {
+	"Sources/Methods/cb_test.4dm": {
+		"left": 908,
+		"top": 341,
+		"width": 877,
+		"height": 637
+	},
+	"Sources/Methods/TEST_1.4dm": {
+		"left": 394,
+		"top": 469,
+		"width": 877,
+		"height": 637
+	},
+	"Sources/Methods/TEST_2.4dm": {
 		"left": 572,
 		"top": 297,
 		"width": 921,
 		"height": 540
 	},
-	"Sources/Methods/cb_test.4dm": {
-		"left": 952,
-		"top": 629,
-		"width": 877,
-		"height": 637
+	"Sources/Methods/TEST_3.4dm": {
+		"left": 572,
+		"top": 297,
+		"width": 921,
+		"height": 540
 	}
 }
