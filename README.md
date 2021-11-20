@@ -54,20 +54,6 @@ If (Match regex("(?s)(?:\\/\\*)(.*)(?:\\*\\/)";$code;1;$pos;$len))
 End if 
 ```
 
-### Issues 
-
-`stdout` and `stderr` are not captured. they are sent to `stdout` and `stderr` of the host application.
-
-The standard technique using `dup` and `dup2` does not seeem to work for redirecting `libpython`.
-
-* https://docs.microsoft.com/ja-jp/cpp/c-runtime-library/reference/dup-dup2?view=msvc-170
-
-### TODO
-
-* imput stream [PyOS_InputHook](https://docs.python.org/3.6/c-api/veryhigh.html#c.PyOS_InputHook)
-* readline [PyOS_ReadlineFunctionPointer](https://docs.python.org/3.6/c-api/veryhigh.html#c.PyOS_ReadlineFunctionPointer)
-* ~~4D method callback [PyCFunction](https://docs.python.org/3.6/c-api/structures.html#c.PyCFunction)~~
-
 ### CMake Options
 
 > (On) Windows it is not possible to build shared .dll extensions against a static libpython, so you must build any extensions you want into libpython itself.
