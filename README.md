@@ -17,7 +17,7 @@
 	fourd.call("cb_test", locals());
 */
 
-  //invoke the project method "cb_test" passing d as $1 (C_OBJECT)
+  //invoke the project method "cb_test" passing locals() as $1 (C_OBJECT)
 
 METHOD GET CODE(Current method path;$code)
 
