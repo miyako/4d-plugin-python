@@ -9,6 +9,29 @@
 * want more functionality than [micropython](https://micropython.org), etc.
 * want static library for package distribution.
 
+### Passing locals
+
+```4d
+/*
+	import fourd
+	fourd.call("cb_test", locals());
+*/
+
+  //invoke the project method "cb_test" passing d as $1 (C_OBJECT)
+
+METHOD GET CODE(Current method path;$code)
+
+$locals:=New object("foo";"bar")
+
+ARRAY LONGINT($pos;0)
+ARRAY LONGINT($len;0)
+
+If (Match regex("(?s)(?:\\/\\*)(.*)(?:\\*\\/)";$code;1;$pos;$len))
+	$py:=Substring($code;$pos{1};$len{1})
+	$status:=python ($py;$locals)
+End if 
+```
+
 ### Project Method Callback
 
 ```4d
