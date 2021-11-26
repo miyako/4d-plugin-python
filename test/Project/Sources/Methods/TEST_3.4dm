@@ -15,5 +15,5 @@ ARRAY LONGINT:C221($len;0)
 
 If (Match regex:C1019("(?s)(?:\\/\\*)(.*)(?:\\*\\/)";$code;1;$pos;$len))
 	$py:=Substring:C12($code;$pos{1};$len{1})
-	$status:=python ($py;$locals)
+	$status:=python ($py;$locals)  //warning! do not break the callback method!
 End if 

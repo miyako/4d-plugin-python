@@ -189,13 +189,13 @@
 		"stamp": "2019-12-13T04:37:40.619Z"
 	},
 	"Sources/Methods/cb_test.4dm": {
-		"startSelection": 27,
-		"endSelection": 27,
-		"firstSelectedLine": 4,
-		"lastSelectedLine": 4,
+		"startSelection": 9,
+		"endSelection": 9,
+		"firstSelectedLine": 0,
+		"lastSelectedLine": 0,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2021-11-19T16:32:01.084Z"
+		"stamp": "2021-11-26T01:33:14.300Z"
 	},
 	"Sources/Methods/TEST_1.4dm": {
 		"startSelection": 0,
@@ -207,21 +207,21 @@
 		"stamp": "2021-11-17T15:42:57.796Z"
 	},
 	"Sources/Methods/TEST_2.4dm": {
-		"startSelection": 0,
-		"endSelection": 0,
-		"firstSelectedLine": 17,
-		"lastSelectedLine": 17,
+		"startSelection": 6,
+		"endSelection": 6,
+		"firstSelectedLine": 2,
+		"lastSelectedLine": 2,
 		"folding": [],
 		"bookmarks": [],
 		"stamp": "2021-11-19T16:41:51.817Z"
 	},
 	"Sources/Methods/TEST_3.4dm": {
-		"startSelection": 56,
-		"endSelection": 56,
-		"firstSelectedLine": 5,
-		"lastSelectedLine": 5,
+		"startSelection": 12,
+		"endSelection": 19,
+		"firstSelectedLine": 2,
+		"lastSelectedLine": 2,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2021-11-20T00:34:10.473Z"
+		"stamp": "2021-11-25T04:53:03.902Z"
 	}
 }

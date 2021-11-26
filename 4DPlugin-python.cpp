@@ -390,6 +390,8 @@ static void OnStartup() {
     
     if(getPythonHome(path)) {
  
+        //https://docs.python.org/3/c-api/init.html#pre-init-safe
+        
 		Py_SetPath((wchar_t *)path.c_str());
         Py_SetPythonHome((wchar_t *)path.c_str());
         
@@ -400,7 +402,7 @@ static void OnStartup() {
         PyImport_AppendInittab("fourd", &PyInit_fourd);
         
         Py_InitializeEx(0);
-        
+
     }
         
 }
@@ -417,11 +419,13 @@ void PluginMain(PA_long32 selector, PA_PluginParameters params) {
         {
             case kInitPlugin:
             case kServerInitPlugin:
+//                PA_RunInMainProcess((PA_RunInMainProcessProcPtr)OnStartup, NULL);
                 OnStartup();
                 break;
                 
             case kDeinitPlugin:
             case kServerDeinitPlugin:
+//                PA_RunInMainProcess((PA_RunInMainProcessProcPtr)OnExit, NULL);
                 OnExit();
                 break;
                 
@@ -545,9 +549,10 @@ void python(PA_PluginParameters params) {
     
     PA_ObjectRef status = PA_CreateObject();
     
-    ob_set_b(status, L"success", false);
     ob_set_s(status, L"version", Py_GetVersion());
     ob_set_s(status, L"build", Py_GetBuildInfo());
+    ob_set_s(status, L"copyright", Py_GetCopyright());
+    ob_set_s(status, L"compiler", Py_GetCompiler());
     
     std::string python;
     
@@ -583,8 +588,26 @@ void python(PA_PluginParameters params) {
     if (ref != NULL) {
         PA_ObjectRef returnValue = PA_CreateObject();
         python_type_to_fourd_type(ref, returnValue);
-        ob_set_b(status, L"returnCalue", returnValue);
-        ob_set_b(status, L"success", true);
+        ob_set_b(status, L"returnValue", returnValue);
+    }
+    
+    if(PyErr_Occurred()) {
+
+        //PyErr_Print() also clears the error indicator so don't use it!
+        
+        PyObject *errType, *errValue, *errTraceback;
+        PyErr_Fetch(&errType, &errValue, &errTraceback);
+        
+        if(errValue){
+            const char *u8 = PyUnicode_AsUTF8AndSize(errValue, NULL);
+            ob_set_s(status, L"errorMessage", u8);
+        }
+
+        Py_XDECREF(errType);
+        Py_XDECREF(errValue);
+        Py_XDECREF(errTraceback);
+
+        PyErr_Clear();//need this because a callback returning NULL is technically an error
     }
     
     PA_ReturnObject(params, status);
