@@ -4,7 +4,7 @@
 ![downloads](https://img.shields.io/github/downloads/miyako/4d-plugin-python/total)
 
 # 4d-plugin-python
-4D implementation of libpython.
+4D implementation of [libpython](https://www.python.org).
 
 * want more functionality than [micropython](https://micropython.org), etc.
 * want static library for package distribution.
