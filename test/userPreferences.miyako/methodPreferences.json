@@ -207,10 +207,10 @@
 		"stamp": "2021-11-17T15:42:57.796Z"
 	},
 	"Sources/Methods/TEST_2.4dm": {
-		"startSelection": 6,
-		"endSelection": 6,
-		"firstSelectedLine": 2,
-		"lastSelectedLine": 2,
+		"startSelection": 0,
+		"endSelection": 0,
+		"firstSelectedLine": 17,
+		"lastSelectedLine": 17,
 		"folding": [],
 		"bookmarks": [],
 		"stamp": "2021-11-19T16:41:51.817Z"

@@ -588,7 +588,7 @@ void python(PA_PluginParameters params) {
     if (ref != NULL) {
         PA_ObjectRef returnValue = PA_CreateObject();
         python_type_to_fourd_type(ref, returnValue);
-        ob_set_b(status, L"returnValue", returnValue);
+        ob_set_o(status, L"returnValue", returnValue);
     }
     
     if(PyErr_Occurred()) {

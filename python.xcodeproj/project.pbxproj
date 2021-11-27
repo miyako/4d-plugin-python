@@ -19,9 +19,9 @@
 		D130064F12F02D9700702C0E /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D130064E12F02D9700702C0E /* Cocoa.framework */; };
 		D13116A91A03ACB700DE1322 /* 4DPluginAPI.c in Sources */ = {isa = PBXBuildFile; fileRef = D13116A81A03ACB700DE1322 /* 4DPluginAPI.c */; settings = {COMPILER_FLAGS = "-Wno-multichar"; }; };
 		D134D4AC1A030BA0008D14EF /* manifest.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = D134D4A91A030B06008D14EF /* manifest.json */; };
-		D15BCAA82745433700ACC0DB /* libpython3.6.7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D15BCAA72745433700ACC0DB /* libpython3.6.7.a */; };
 		D15BCAAC2745463D00ACC0DB /* 4DPlugin-JSON.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D15BCAAA2745463D00ACC0DB /* 4DPlugin-JSON.cpp */; };
 		D15BCAAD2745463D00ACC0DB /* 4DPlugin-JSON.h in Headers */ = {isa = PBXBuildFile; fileRef = D15BCAAB2745463D00ACC0DB /* 4DPlugin-JSON.h */; };
+		D19961512751D63D0092A392 /* libpython3.6.7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D15BCAA72745433700ACC0DB /* libpython3.6.7.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -56,6 +56,7 @@
 		D15BCAA72745433700ACC0DB /* libpython3.6.7.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpython3.6.7.a; path = a/libpython3.6.7.a; sourceTree = "<group>"; };
 		D15BCAAA2745463D00ACC0DB /* 4DPlugin-JSON.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = "4DPlugin-JSON.cpp"; path = "support/4DPlugin-JSON.cpp"; sourceTree = "<group>"; };
 		D15BCAAB2745463D00ACC0DB /* 4DPlugin-JSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "4DPlugin-JSON.h"; path = "support/4DPlugin-JSON.h"; sourceTree = "<group>"; };
+		D199614C2751D4CC0092A392 /* libpython3.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpython3.6.dylib; path = a/libpython3.6.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,8 +65,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D11985DA2748639D00CBC92F /* libjsoncpp.a in Frameworks */,
-				D15BCAA82745433700ACC0DB /* libpython3.6.7.a in Frameworks */,
 				D130064F12F02D9700702C0E /* Cocoa.framework in Frameworks */,
+				D19961512751D63D0092A392 /* libpython3.6.7.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +89,7 @@
 		089C1671FE841209C02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				D199614C2751D4CC0092A392 /* libpython3.6.dylib */,
 				D130064E12F02D9700702C0E /* Cocoa.framework */,
 				D15BCAA72745433700ACC0DB /* libpython3.6.7.a */,
 				D11985D92748639D00CBC92F /* libjsoncpp.a */,
@@ -326,7 +328,8 @@
 					"$(PROJECT_DIR)/a",
 				);
 				LIBRARY_STYLE = Bundle;
-				MARKETING_VERSION = 1.4.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MARKETING_VERSION = 1.5.0;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
@@ -377,7 +380,8 @@
 					"$(PROJECT_DIR)/a",
 				);
 				LIBRARY_STYLE = Bundle;
-				MARKETING_VERSION = 1.4.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MARKETING_VERSION = 1.5.0;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
@@ -426,7 +430,8 @@
 					"$(PROJECT_DIR)/a",
 				);
 				LIBRARY_STYLE = Bundle;
-				MARKETING_VERSION = 1.4.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MARKETING_VERSION = 1.5.0;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
