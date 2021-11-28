@@ -216,12 +216,12 @@
 		"stamp": "2021-11-19T16:41:51.817Z"
 	},
 	"Sources/Methods/TEST_3.4dm": {
-		"startSelection": 12,
-		"endSelection": 19,
-		"firstSelectedLine": 2,
-		"lastSelectedLine": 2,
+		"startSelection": 45,
+		"endSelection": 45,
+		"firstSelectedLine": 6,
+		"lastSelectedLine": 6,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2021-11-25T04:53:03.902Z"
+		"stamp": "2021-11-28T05:52:14.266Z"
 	}
 }

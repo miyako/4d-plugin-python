@@ -155,6 +155,7 @@ static PyObject *fourd_type_to_python_type(PA_Variable status) {
             if(fourd_object_to_json(o, &jsonValue)) {
                 if(jsonValue.isObject())
                 {
+                    result = PyDict_New();
                     json_to_python_object(jsonValue, result);
                 }
             }
@@ -179,6 +180,7 @@ static PyObject *fourd_type_to_python_type(PA_Variable status) {
             if(fourd_collection_to_json(c, &jsonValue)) {
                 if(jsonValue.isArray())
                 {
+                    result = PyList_New(0);
                     json_to_python_object(jsonValue, result);
                 }
             }

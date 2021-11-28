@@ -2,6 +2,7 @@
 /*
 import fourd
 fourd.call("cb_test", locals());
+fourd.call("cb_test", locals());
 */
 
   //invoke the project method "cb_test" passing locals() as $1 (C_OBJECT)

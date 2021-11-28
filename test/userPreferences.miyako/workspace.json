@@ -2,10 +2,10 @@
 	"editors": [
 		{
 			"type": "method",
-			"id": 2147483637,
+			"id": 2147483641,
 			"codeDescriptor": {
 				"type": 1,
-				"methodName": "TEST_1"
+				"methodName": "TEST_3"
 			}
 		},
 		{
