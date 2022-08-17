@@ -1,6 +1,22 @@
-﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <xliff version="1.0" xmlns:d4="http://www.4d.com/d4-ns">
     <header>
         <note>python</note>
     </header>
+    <group resname="themes">
+        <trans-unit id="" resname="F33AC1F0F0834225A1F8DB6109B44D1F" translate="no">
+            <source>Link Type</source>
+        </trans-unit>
+    </group>
+    <group restype="x-4DK#" d4:groupName="F33AC1F0F0834225A1F8DB6109B44D1F">
+        <trans-unit d4:value="0:L" id="F33AC1F0F0834225A1F8DB6109B44D1F.1">
+            <source>python_exec</source>
+        </trans-unit>
+        <trans-unit d4:value="1:L" id="F33AC1F0F0834225A1F8DB6109B44D1F.2">
+            <source>python_eval</source>
+        </trans-unit>
+        <trans-unit d4:value="2:L" id="F33AC1F0F0834225A1F8DB6109B44D1F.3">
+            <source>python_line</source>
+        </trans-unit>
+    </group>
 </xliff>

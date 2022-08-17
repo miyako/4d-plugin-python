@@ -1,4 +1,4 @@
-﻿{
+{
 	"Sources/DatabaseMethods/onStartup.4dm": {
 		"left": 322,
 		"top": 651,
@@ -22,54 +22,6 @@
 		"top": 275,
 		"width": 1138,
 		"height": 592
-	},
-	"Sources/Methods/generate_project_xcode.4dm": {
-		"left": 511,
-		"top": 304,
-		"width": 1129,
-		"height": 787
-	},
-	"Sources/Methods/generate_constants_xlf.4dm": {
-		"left": 478,
-		"top": 165,
-		"width": 1129,
-		"height": 762
-	},
-	"Sources/Methods/generate_project_vs.4dm": {
-		"left": 478,
-		"top": 165,
-		"width": 1129,
-		"height": 762
-	},
-	"Sources/Methods/generate_project.4dm": {
-		"left": 478,
-		"top": 140,
-		"width": 1129,
-		"height": 787
-	},
-	"Sources/Methods/generate_project_source.4dm": {
-		"left": 511,
-		"top": 304,
-		"width": 1129,
-		"height": 787
-	},
-	"Sources/Methods/generate_file_from_template.4dm": {
-		"left": 478,
-		"top": 165,
-		"width": 1129,
-		"height": 762
-	},
-	"Sources/Methods/generate_project_plugin_stub.4dm": {
-		"left": 500,
-		"top": 130,
-		"width": 720,
-		"height": 399
-	},
-	"Sources/Methods/generate_project_infoplist.4dm": {
-		"left": 305,
-		"top": 248,
-		"width": 1129,
-		"height": 762
 	},
 	"Sources/Forms/フォーム1/ObjectMethods/ボタン.4dm": {
 		"left": 490,
@@ -156,27 +108,87 @@
 		"height": 757
 	},
 	"Sources/Methods/cb_test.4dm": {
-		"left": 908,
-		"top": 341,
-		"width": 877,
-		"height": 637
+		"left": 469,
+		"top": 332,
+		"width": 1046,
+		"height": 577
 	},
 	"Sources/Methods/TEST_1.4dm": {
-		"left": 394,
-		"top": 469,
-		"width": 877,
-		"height": 637
+		"left": 362,
+		"top": 477,
+		"width": 1046,
+		"height": 577
 	},
 	"Sources/Methods/TEST_2.4dm": {
-		"left": 224,
-		"top": 166,
-		"width": 921,
-		"height": 540
+		"left": 362,
+		"top": 477,
+		"width": 1046,
+		"height": 577
 	},
 	"Sources/Methods/TEST_3.4dm": {
-		"left": 400,
-		"top": 235,
+		"left": 362,
+		"top": 477,
+		"width": 1046,
+		"height": 577
+	},
+	"Trash/Methods/(generate_project_xcode).4dm": {
+		"left": 511,
+		"top": 304,
+		"width": 1129,
+		"height": 787
+	},
+	"Trash/Methods/(generate_project_vs).4dm": {
+		"left": 478,
+		"top": 165,
+		"width": 1129,
+		"height": 762
+	},
+	"Trash/Methods/(generate_project_source).4dm": {
+		"left": 511,
+		"top": 304,
+		"width": 1129,
+		"height": 787
+	},
+	"Trash/Methods/(generate_project_plugin_stub).4dm": {
+		"left": 500,
+		"top": 130,
+		"width": 720,
+		"height": 399
+	},
+	"Trash/Methods/(generate_project_infoplist).4dm": {
+		"left": 305,
+		"top": 248,
+		"width": 1129,
+		"height": 762
+	},
+	"Trash/Methods/(generate_project).4dm": {
+		"left": 478,
+		"top": 140,
+		"width": 1129,
+		"height": 787
+	},
+	"Trash/Methods/(generate_file_from_template).4dm": {
+		"left": 478,
+		"top": 165,
+		"width": 1129,
+		"height": 762
+	},
+	"Trash/Methods/(generate_constants_xlf).4dm": {
+		"left": 478,
+		"top": 165,
+		"width": 1129,
+		"height": 762
+	},
+	"Sources/Methods/TEST_4.4dm": {
+		"left": 362,
+		"top": 449,
 		"width": 1046,
 		"height": 605
+	},
+	"Sources/Methods/cb_get_result.4dm": {
+		"left": 362,
+		"top": 477,
+		"width": 1046,
+		"height": 577
 	}
 }

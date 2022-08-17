@@ -4,7 +4,7 @@
     "commands": [
         {
             "theme": "python",
-            "syntax": "python(&T;&J):J",
+            "syntax": "python(&T;&J;&L):J",
             "threadSafe": true
         }
     ]

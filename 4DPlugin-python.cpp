@@ -563,7 +563,7 @@ void python(PA_PluginParameters params) {
         CUTF16String u16 = (const PA_Unichar *)PA_GetUnistring(arg1);
         u16_to_u8(u16, python);
     }
-    
+        
     PyObject *main = PyImport_AddModule("__main__");
     PyObject *globals = PyModule_GetDict(main);
     
@@ -579,11 +579,33 @@ void python(PA_PluginParameters params) {
             }
         }
     }
+    
+    PyObject *ref = NULL;
         
-    PyObject *ref = PyRun_String(python.c_str(),
-                                 Py_file_input,
-                                 globals,
-                                 locals);
+    switch (PA_GetLongParameter(params, 3)) {
+        case 1: //python_eval
+            ref = PyRun_String(python.c_str(),
+                               Py_eval_input,
+                               globals,
+                               locals);
+            break;
+            
+        case 2: //python_line
+            ref = PyRun_String(python.c_str(),
+                               Py_single_input,
+                               globals,
+                               locals);
+            break;
+            
+        default://python_exec
+            ref = PyRun_String(python.c_str(),
+                               Py_file_input,
+                               globals,
+                               locals);
+            break;
+    }
+    
+
     
     Py_DECREF(locals);
     
