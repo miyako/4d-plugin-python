@@ -5,7 +5,11 @@
 /* Include nearly all Python header files */
 
 #include "patchlevel.h"
+#ifdef WIN32
+#include "windows/pyconfig.h"
+#else
 #include "pyconfig.h"
+#endif
 #include "pymacconfig.h"
 
 #include <limits.h>

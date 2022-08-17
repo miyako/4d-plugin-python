@@ -1,7 +1,11 @@
 #ifndef Py_PYPORT_H
 #define Py_PYPORT_H
 
-#include "pyconfig.h" /* include for defines */
+#ifdef WIN32
+#include "windows/pyconfig.h"
+#else
+#include "pyconfig.h"
+#endif
 
 #include <inttypes.h>
 
