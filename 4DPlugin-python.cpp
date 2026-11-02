@@ -212,6 +212,38 @@ static PyObject *fourd_type_to_python_type(PA_Variable status) {
 
 static void python_type_to_fourd_type(PyObject *arg, PA_ObjectRef obj);
 
+// the shared 4DPlugin-JSON.h has no narrow (UTF-8) key ob_set_b / ob_set_c;
+// keep them local to this plugin
+
+static void python_set_property(PA_ObjectRef obj, const char *_key, PA_Variable *v) {
+    
+    std::string u8 = _key;
+    CUTF16String u16;
+    u8_to_u16(u8, u16);
+    PA_Unistring key = PA_CreateUnistring((PA_Unichar *)u16.c_str());
+    PA_SetObjectProperty(obj, &key, *v);
+    PA_DisposeUnistring(&key);
+    PA_ClearVariable(v);
+}
+
+static void python_ob_set_b(PA_ObjectRef obj, const char *_key, bool value) {
+    
+    if(obj && _key) {
+        PA_Variable v = PA_CreateVariable(eVK_Boolean);
+        PA_SetBooleanVariable(&v, value);
+        python_set_property(obj, _key, &v);
+    }
+}
+
+static void python_ob_set_c(PA_ObjectRef obj, const char *_key, PA_CollectionRef value) {
+    
+    if(obj && _key && value) {
+        PA_Variable v = PA_CreateVariable(eVK_Collection);
+        PA_SetCollectionVariable(&v, value);
+        python_set_property(obj, _key, &v);
+    }
+}
+
 static void python_list_to_fourd_collection(PyObject *arg, PA_CollectionRef col) {
  
     for(Py_ssize_t i = 0; i < PyList_Size(arg); ++i) {
@@ -292,7 +324,7 @@ static void python_type_to_fourd_type(PyObject *arg, PA_ObjectRef obj) {
                 continue;
             }
             if(PyBool_Check(value)) {
-                ob_set_b(obj, u8, PyLong_AsLong(value));
+                python_ob_set_b(obj, u8, PyLong_AsLong(value));
                 continue;
             }
             if(PyDict_Check(value)) {
@@ -304,7 +336,7 @@ static void python_type_to_fourd_type(PyObject *arg, PA_ObjectRef obj) {
             if(PyList_Check(value)) {
                 PA_CollectionRef col = PA_CreateCollection();
                 python_list_to_fourd_collection(value, col);
-                ob_set_c(obj, u8, col);
+                python_ob_set_c(obj, u8, col);
             }
         }
     }
