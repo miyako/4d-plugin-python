@@ -20,7 +20,8 @@ static bool getPythonHome(std::wstring& path) {
         NSString *str = [[[thisBundle resourcePath]stringByAppendingPathComponent:@"python"]stringByAppendingPathComponent:@"lib"];
         if(str){
             NSData *u32 = [str dataUsingEncoding:NSUTF32LittleEndianStringEncoding];//default is BE
-            path = std::wstring((wchar_t *)[u32 bytes], wcslen((wchar_t *)[u32 bytes]));
+            /* the data is not NUL-terminated: use its length, not wcslen() */
+            path = std::wstring((const wchar_t *)[u32 bytes], [u32 length] / sizeof(wchar_t));
             return true;
          }
         
@@ -66,14 +67,14 @@ static bool getPythonHome(std::wstring& path) {
 }
 #endif
 
-static Json::Value fourd_collection_to_json(PA_CollectionRef obj, Json::Value *jsonValue) {
+static bool fourd_collection_to_json(PA_CollectionRef obj, Json::Value *jsonValue) {
     
     bool parse = false;
         
     if(obj) {
         PA_Variable params[1], result;
         params[0] = PA_CreateVariable(eVK_Collection);
-        PA_SetObjectVariable(&params[0], obj);
+        PA_SetCollectionVariable(&params[0], obj);
         result = PA_ExecuteCommandByID(1217, params, 1);
         PA_Unistring json = PA_GetStringVariable(result);
         CUTF16String u16;
@@ -95,7 +96,7 @@ static Json::Value fourd_collection_to_json(PA_CollectionRef obj, Json::Value *j
     return parse;
 }
 
-static Json::Value fourd_object_to_json(PA_ObjectRef obj, Json::Value *jsonValue) {
+static bool fourd_object_to_json(PA_ObjectRef obj, Json::Value *jsonValue) {
     
     bool parse = false;
         
@@ -248,11 +249,30 @@ static void python_list_to_fourd_collection(PyObject *arg, PA_CollectionRef col)
  
     for(Py_ssize_t i = 0; i < PyList_Size(arg); ++i) {
         PyObject *elem = PyList_GetItem(arg, i);
+        if(elem == NULL || elem == Py_None) {
+            PA_Variable v = PA_CreateVariable(eVK_Null);
+            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            continue;
+        }
+        /* bool is a subclass of int: test it before PyLong_Check */
+        if(PyBool_Check(elem)) {
+            PA_Variable v = PA_CreateVariable(eVK_Boolean);
+            PA_SetBooleanVariable(&v, (char)(elem == Py_True));
+            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            continue;
+        }
         if(PyUnicode_Check(elem)) {
-            std::string u8 = PyUnicode_AsUTF8AndSize(elem, NULL);
+            const char *s = PyUnicode_AsUTF8AndSize(elem, NULL);
+            if(!s) {
+                PyErr_Clear();
+                continue;
+            }
+            std::string u8 = s;
             CUTF16String u16;
             u8_to_u16(u8, u16);
-            PA_Variable v = PA_CreateVariable(eVK_Unistring);
+            /* eVK_Undefined: PA_SetStringVariable doesn't free the empty
+               string PA_CreateVariable(eVK_Unistring) would allocate */
+            PA_Variable v = PA_CreateVariable(eVK_Undefined);
             PA_Unistring value = PA_CreateUnistring((PA_Unichar *)u16.c_str());
             PA_SetStringVariable(&v, &value);
             PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
@@ -267,17 +287,6 @@ static void python_list_to_fourd_collection(PyObject *arg, PA_CollectionRef col)
         if(PyFloat_Check(elem)) {
             PA_Variable v = PA_CreateVariable(eVK_Real);
             PA_SetRealVariable(&v, PyFloat_AsDouble(elem));
-            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
-            continue;
-        }
-        if(elem == NULL) {
-            PA_Variable v = PA_CreateVariable(eVK_Null);
-            PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
-            continue;
-        }
-        if(PyBool_Check(elem)) {
-            PA_Variable v = PA_CreateVariable(eVK_Boolean);
-            PA_SetBooleanVariable(&v, (char)PyLong_AsLong(elem));
             PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
             continue;
         }
@@ -306,9 +315,27 @@ static void python_type_to_fourd_type(PyObject *arg, PA_ObjectRef obj) {
     
     while (PyDict_Next(arg, &pos, &key, &value)) {
         const char *u8 = PyUnicode_AsUTF8AndSize(key, NULL);
+        if(!u8) {
+            PyErr_Clear();
+            continue;
+        }
         if(u8) {
+            if(value == NULL || value == Py_None) {
+                ob_set_0(obj, u8);
+                continue;
+            }
+            /* bool is a subclass of int: test it before PyLong_Check */
+            if(PyBool_Check(value)) {
+                python_ob_set_b(obj, u8, value == Py_True);
+                continue;
+            }
             if(PyUnicode_Check(value)) {
-                ob_set_s(obj, u8, PyUnicode_AsUTF8AndSize(value, NULL));
+                const char *s = PyUnicode_AsUTF8AndSize(value, NULL);
+                if(s) {
+                    ob_set_s(obj, u8, s);
+                }else{
+                    PyErr_Clear();
+                }
                 continue;
             }
             if(PyLong_Check(value)) {
@@ -317,14 +344,6 @@ static void python_type_to_fourd_type(PyObject *arg, PA_ObjectRef obj) {
             }
             if(PyFloat_Check(value)) {
                 ob_set_n(obj, u8, PyFloat_AsDouble(value));
-                continue;
-            }
-            if(value == NULL) {
-                ob_set_0(obj, u8);
-                continue;
-            }
-            if(PyBool_Check(value)) {
-                python_ob_set_b(obj, u8, PyLong_AsLong(value));
                 continue;
             }
             if(PyDict_Check(value)) {
@@ -383,6 +402,12 @@ static PyObject *fourd_call(PyObject *self, PyObject *args) {
         }
   
     }
+    
+    /* NULL without an exception set makes Python raise SystemError and
+       abort the script; return None for unknown methods/unsupported types */
+    if((result == NULL) && (!PyErr_Occurred())) {
+        Py_RETURN_NONE;
+    }
                          
     return result;
 }
@@ -418,11 +443,29 @@ static PyObject *PyInit_fourd(void) {
     return PyModule_Create(&EmbModule);
 }
 
+/* Py_InitializeEx() calls Py_FatalError (abort) when it can't import the
+   encodings module, which would take 4D down with it */
+static bool pythonLibExists(const std::wstring& path) {
+    
+#if VERSIONMAC
+    std::wstring w = path + L"/encodings/__init__.py";
+    NSString *str = [[NSString alloc]initWithBytes:w.data()
+                                            length:w.length() * sizeof(wchar_t)
+                                          encoding:NSUTF32LittleEndianStringEncoding];
+    BOOL exists = str ? [[NSFileManager defaultManager]fileExistsAtPath:str] : NO;
+    [str release];
+    return exists;
+#else
+    std::wstring w = path + L"\\encodings\\__init__.py";
+    return GetFileAttributesW(w.c_str()) != INVALID_FILE_ATTRIBUTES;
+#endif
+}
+
 static void OnStartup() {
 
     std::wstring path;
     
-    if(getPythonHome(path)) {
+    if(getPythonHome(path) && pythonLibExists(path)) {
  
         //https://docs.python.org/3/c-api/init.html#pre-init-safe
         
@@ -492,12 +535,16 @@ static void json_to_python_object(Json::Value jsonValue, PyObject *obj) {
                 PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
                 PyObject *value = PyLong_FromLong(it->asInt());
                 PyDict_SetItem(obj, key, value);
+                Py_XDECREF(key);
+                Py_XDECREF(value);
                 continue;
             }
             if(it->isDouble()) {
                 PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
                 PyObject *value = PyFloat_FromDouble(it->asDouble());
                 PyDict_SetItem(obj, key, value);
+                Py_XDECREF(key);
+                Py_XDECREF(value);
                 continue;
             }
             if(it->isString()) {
@@ -505,28 +552,40 @@ static void json_to_python_object(Json::Value jsonValue, PyObject *obj) {
                 PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
                 PyObject *value = PyUnicode_FromStringAndSize(v.c_str(), (Py_ssize_t)v.length());
                 PyDict_SetItem(obj, key, value);
+                Py_XDECREF(key);
+                Py_XDECREF(value);
                 continue;
             }
             if(it->isBool()) {
                 PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
                 PyObject *value = it->asBool() ? Py_True : Py_False;
                 PyDict_SetItem(obj, key, value);
+                Py_XDECREF(key);
                 continue;
             }
             if(it->isNull()) {
                 PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
                 PyObject *value = Py_None;
                 PyDict_SetItem(obj, key, value);
+                Py_XDECREF(key);
                 continue;
             }
             if(it->isObject()) {
-                PyObject *locals = PyDict_New();
-                json_to_python_object(*it, locals);
+                PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
+                PyObject *value = PyDict_New();
+                json_to_python_object(*it, value);
+                PyDict_SetItem(obj, key, value);
+                Py_XDECREF(key);
+                Py_XDECREF(value);
                 continue;
             }
             if(it->isArray()) {
-                PyObject *locals = PyList_New(0);
-                json_to_python_object(*it, locals);
+                PyObject *key = PyUnicode_FromStringAndSize(k.c_str(), (Py_ssize_t)k.length());
+                PyObject *value = PyList_New(0);
+                json_to_python_object(*it, value);
+                PyDict_SetItem(obj, key, value);
+                Py_XDECREF(key);
+                Py_XDECREF(value);
                 continue;
             }
         }
@@ -540,17 +599,20 @@ static void json_to_python_object(Json::Value jsonValue, PyObject *obj) {
             if(i->isInt()) {
                 PyObject *value = PyLong_FromLong(i->asInt());
                 PyList_Append(obj, value);
+                Py_XDECREF(value);
                 continue;
             }
             if(i->isDouble()) {
                 PyObject *value = PyFloat_FromDouble(i->asDouble());
                 PyList_Append(obj, value);
+                Py_XDECREF(value);
                 continue;
             }
             if(i->isString()) {
                 JSONCPP_STRING v = i->asString();
                 PyObject *value = PyUnicode_FromStringAndSize(v.c_str(), (Py_ssize_t)v.length());
                 PyList_Append(obj, value);
+                Py_XDECREF(value);
                 continue;
             }
             if(i->isBool()) {
@@ -567,12 +629,14 @@ static void json_to_python_object(Json::Value jsonValue, PyObject *obj) {
                 PyObject *value = PyDict_New();
                 json_to_python_object(*i, value);
                 PyList_Append(obj, value);
+                Py_XDECREF(value);
                 continue;
             }
             if(i->isArray()) {
                 PyObject *value = PyList_New(0);
                 json_to_python_object(*i, value);
                 PyList_Append(obj, value);
+                Py_XDECREF(value);
                 continue;
             }
         }
@@ -587,6 +651,12 @@ void python(PA_PluginParameters params) {
     ob_set_s(status, L"build", Py_GetBuildInfo());
     ob_set_s(status, L"copyright", Py_GetCopyright());
     ob_set_s(status, L"compiler", Py_GetCompiler());
+    
+    if(!Py_IsInitialized()) {
+        ob_set_s(status, L"errorMessage", "Python is not initialized (standard library not found in the plugin's Resources/python/lib)");
+        PA_ReturnObject(params, status);
+        return;
+    }
     
     std::string python;
     
@@ -645,6 +715,7 @@ void python(PA_PluginParameters params) {
         PA_ObjectRef returnValue = PA_CreateObject();
         python_type_to_fourd_type(ref, returnValue);
         ob_set_o(status, L"returnValue", returnValue);
+        Py_DECREF(ref);
     }
     
     if(PyErr_Occurred()) {
@@ -654,9 +725,18 @@ void python(PA_PluginParameters params) {
         PyObject *errType, *errValue, *errTraceback;
         PyErr_Fetch(&errType, &errValue, &errTraceback);
         
+        PyErr_NormalizeException(&errType, &errValue, &errTraceback);
+        
         if(errValue){
-            const char *u8 = PyUnicode_AsUTF8AndSize(errValue, NULL);
-            ob_set_s(status, L"errorMessage", u8);
+            /* errValue is an exception instance, not a str: format it */
+            PyObject *str = PyObject_Str(errValue);
+            if(str) {
+                const char *u8 = PyUnicode_AsUTF8AndSize(str, NULL);
+                if(u8) {
+                    ob_set_s(status, L"errorMessage", u8);
+                }
+                Py_DECREF(str);
+            }
         }
 
         Py_XDECREF(errType);
@@ -679,7 +759,7 @@ static void u16_to_u8(CUTF16String& u16, std::string& u8) {
     if(len){
         std::vector<uint8_t> buf(len + 1);
         if(WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)u16.c_str(), u16.length(), (LPSTR)&buf[0], len, NULL, NULL)){
-            u8 = std::string((const char *)&buf[0]);
+            u8 = std::string((const char *)&buf[0], (size_t)len);
         }
     }else{
         u8 = std::string((const char *)"");
@@ -706,7 +786,7 @@ static void u8_to_u16(std::string& u8, CUTF16String& u16) {
     if(len){
         std::vector<uint8_t> buf((len + 1) * sizeof(PA_Unichar));
         if(MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)u8.c_str(), u8.length(), (LPWSTR)&buf[0], len)){
-            u16 = CUTF16String((const PA_Unichar *)&buf[0]);
+            u16 = CUTF16String((const PA_Unichar *)&buf[0], (size_t)len);
         }
     }else{
         u16 = CUTF16String((const PA_Unichar *)L"");
@@ -718,7 +798,7 @@ static void u8_to_u16(std::string& u8, CUTF16String& u16) {
         CFIndex len = CFStringGetLength(str);
         std::vector<uint8_t> buf((len+1) * sizeof(PA_Unichar));
         CFStringGetCharacters(str, CFRangeMake(0, len), (UniChar *)&buf[0]);
-        u16 = CUTF16String((const PA_Unichar *)&buf[0]);
+        u16 = CUTF16String((const PA_Unichar *)&buf[0], (size_t)len);
         CFRelease(str);
     }
 #endif
