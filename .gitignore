@@ -1,1 +1,10 @@
 build/*
+.DS_Store
+test/Data/Logs/
+test/Logs/
+test/userPreferences.*/
+test/Project/DerivedData/
+/python.dmg
+/python.zip
+test/Plugins/python.bundle/Contents/MacOS/
+test/Plugins/python.bundle/Contents/_CodeSignature/
