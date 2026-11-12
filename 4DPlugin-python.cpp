@@ -79,6 +79,8 @@ static bool fourd_collection_to_json(PA_CollectionRef obj, Json::Value *jsonValu
         PA_Unistring json = PA_GetStringVariable(result);
         CUTF16String u16;
         u16 = PA_GetUnistring(&json);
+        /* the JSON Stringify result is owned; params[0] holds the caller's ref */
+        PA_ClearVariable(&result);
         std::string u8;
         u16_to_u8(u16, u8);
         
@@ -108,6 +110,8 @@ static bool fourd_object_to_json(PA_ObjectRef obj, Json::Value *jsonValue) {
         PA_Unistring json = PA_GetStringVariable(result);
         CUTF16String u16;
         u16 = PA_GetUnistring(&json);
+        /* the JSON Stringify result is owned; params[0] holds the caller's ref */
+        PA_ClearVariable(&result);
         std::string u8;
         u16_to_u8(u16, u8);
         
@@ -245,6 +249,7 @@ static void python_ob_set_c(PA_ObjectRef obj, const char *_key, PA_CollectionRef
     }
 }
 
+/* PA_SetCollectionElement copies v: v must still be cleared */
 static void python_list_to_fourd_collection(PyObject *arg, PA_CollectionRef col) {
  
     for(Py_ssize_t i = 0; i < PyList_Size(arg); ++i) {
@@ -276,6 +281,7 @@ static void python_list_to_fourd_collection(PyObject *arg, PA_CollectionRef col)
             PA_Unistring value = PA_CreateUnistring((PA_Unichar *)u16.c_str());
             PA_SetStringVariable(&v, &value);
             PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            PA_ClearVariable(&v);
             continue;
         }
         if(PyLong_Check(elem)) {
@@ -296,6 +302,7 @@ static void python_list_to_fourd_collection(PyObject *arg, PA_CollectionRef col)
             PA_Variable v = PA_CreateVariable(eVK_Object);
             PA_SetObjectVariable(&v, prop);
             PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            PA_ClearVariable(&v);
             continue;
         }
         if(PyList_Check(elem)) {
@@ -304,6 +311,7 @@ static void python_list_to_fourd_collection(PyObject *arg, PA_CollectionRef col)
             PA_Variable v = PA_CreateVariable(eVK_Collection);
             PA_SetCollectionVariable(&v, col2);
             PA_SetCollectionElement(col, PA_GetCollectionLength(col), v);
+            PA_ClearVariable(&v);
         }
     }
 }
@@ -395,9 +403,12 @@ static PyObject *fourd_call(PyObject *self, PyObject *args) {
             PA_SetObjectVariable(&params[0], param1);
             
             PA_Variable status = PA_ExecuteMethodByID(method_id, params, argc);
+            PA_ErrorCode err = PA_GetLastError();
             
             result = fourd_type_to_python_type(status);
-                                    
+            
+            /* the method result is owned; its value was copied into Python */
+            if(err == eER_NoErr) PA_ClearVariable(&status);
             PA_ClearVariable(&params[0]);
         }
   
